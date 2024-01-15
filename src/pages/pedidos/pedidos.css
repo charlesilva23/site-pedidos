@@ -1,0 +1,11 @@
+h2.d-inline {
+    margin-right: 30px;
+}
+
+.form-pedido select{
+    border: 0px;
+    background-color: white;
+    height: 35px;
+    cursor: pointer;
+
+}
