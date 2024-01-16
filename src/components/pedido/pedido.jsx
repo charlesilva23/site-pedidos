@@ -1,9 +1,27 @@
+import { Link } from "react-router-dom";
 
 
 
 function Pedido(props) {
 
-    const dt_pedido = new Date(props.dt_pedido);
+    const dt_pedido = new Date(props.dt_pedido.substring(0, 19));
+
+    function AlterarStatus(id_ped, st){
+        alert(id_ped + ' Mudar para o status ' + st)
+    
+        //Fazer um PUT para o servidor
+
+    }
+
+    function ExcluirPedido(id_ped){
+        alert(' Excluindo pedido ' + id_ped);
+    
+        //Fazer um DELETE para o servidor
+
+    }
+
+
+    
 
     return <tr>
         <td>{props.id_pedido}</td>
@@ -15,8 +33,8 @@ function Pedido(props) {
             <div className="dropdown">
                 <button className="btn btn-outline-secundary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Opções</button>
                 <ul className="dropdown-menu">
-                    <li> <a className="dropdown-item" href="#">Editar Pedido</a></li>
-                    <li> <a className="dropdown-item" href="#">Editar Pedido</a></li>
+                    <li> <Link className="dropdown-item" to={"/pedidos/editar/" + props.id_pedido}>Editar Pedido</Link></li>
+                    <li> <a className="dropdown-item" href="#">Excluir Pedido</a></li>
                     <li> <hr className="dropdown-divider" /></li>
                     <li> <a className="dropdown-item" href="#">Finalizar Pedido</a></li>
                     <li> <a className="dropdown-item" href="#">Reabrir Pedido</a></li>

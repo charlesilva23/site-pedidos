@@ -1,10 +1,12 @@
-import { Link } from "react-router-dom"
+import { Link, useParams } from "react-router-dom"
 import Navbar from "../components/navbar/navbar"
 import "./pedido-editar.css"
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 function PedidoEditar() {
+
+    const {id_pedido} = useParams();
 
     const lista_clientes = [{id_cliente: 1, nome: "Carlos"},
                             {id_cliente: 2, nome: "Andre"}];
@@ -51,6 +53,18 @@ function ExcluirProduto(id_item) {
     setProdutos(prod);
 }
 
+function CarregarDadosPedido(id_ped) {
+    if (id_ped > 0){
+        //editando
+    } else {
+        //inserindo
+    }
+}
+
+useEffect(() => {
+    CarregarDadosPedido(id_pedido);
+}, []);
+
     return <>
         <Navbar />
 
@@ -59,7 +73,12 @@ function ExcluirProduto(id_item) {
             <div className="row col-lg-6 offset-lg-3 ">
 
                 <div className="col-12 mb-4 mt-2">
-                    <h2 className="d-inline">Pedido</h2>
+                    <h2 className="d-inline">
+                    {
+                        id_pedido > 0 ? " Editar Pedido " + id_pedido : " Novo Pedido "
+                    }
+                    </h2>
+
                 </div>
 
                <div className="col-md-8 mb-4">

@@ -2,32 +2,49 @@ import { Link } from "react-router-dom";
 import Navbar from "../../components/navbar/navbar.jsx";
 import '../pedidos/pedidos.css'
 import Pedido from "../../components/pedido/pedido.jsx";
+import { useEffect, useState } from "react";
 
 
 function Pedidos() {
 
-    const pedidos = [
-        {
-            "id_pedido": 2,
-            "cliente": "Posto Brasil",
-            "dt_pedido": "2023-03-09T19:45:54.2092",
-            "status": "F",
-            "status_descricao": "Finalizado",
-            "vl_total": 180
-        },
-        {
-            "id_pedido": 1,
-            "cliente": "Charle's Industries",
-            "dt_pedido": "2023-02-15T19:00:00.0002",
-            "status": "F",
-            "status_descricao": "Finalizado",
-            "vl_total": 1400
-        },
-    ]
+    const [pedidos, setPedidos] = useState([]);
+    const [status, setStatus] = useState("");
 
+    function ConsultarPedidos() {
 
+        // Fazendo GET no servidor
+        
+        setPedidos([
+            {
+                "id_pedido": 1,
+                "cliente": "Posto Brasil",
+                "dt_pedido": "2023-03-09T19:45:54.2092",
+                "status": "F",
+                "status_descricao": "Finalizado",
+                "vl_total": 180
+            },
+            {
+                "id_pedido": 2,
+                "cliente": "Charle's Industries",
+                "dt_pedido": "2023-02-15T19:00:00.0002",
+                "status": "F",
+                "status_descricao": "Finalizado",
+                "vl_total": 1400
+            },
+            {
+                "id_pedido": 3,
+                "cliente": "Mercadinho do futuro",
+                "dt_pedido": "2023-02-17T18:00:00.1002",
+                "status": "A",
+                "status_descricao": "Aberto",
+                "vl_total": 1900
+            }
+        ]);
+    }
 
-
+    useEffect(() => {
+        ConsultarPedidos();
+    }, []);
 
     return <>
         <Navbar />
@@ -41,13 +58,13 @@ function Pedidos() {
                 
                 <div>
                     <div className="form-control d-inline me-3">
-                        <select name="status" id="status">
+                        <select name="status" id="status" onChange={(e) => setStatus(e.target.value)}>
                             <option value="">Status</option>
                             <option value="A">Aberto</option>
                             <option value="F">Finalizado</option>
                         </select>
                     </div>
-                    <button className="btn btn-primary">Filtrar</button>
+                    <button className="btn btn-primary" onClick={ConsultarPedidos}>Filtrar</button>
                 </div>
 
             </div>
