@@ -34,10 +34,10 @@ function Pedido(props) {
                 <button className="btn btn-outline-secundary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Opções</button>
                 <ul className="dropdown-menu">
                     <li> <Link className="dropdown-item" to={"/pedidos/editar/" + props.id_pedido}>Editar Pedido</Link></li>
-                    <li> <a className="dropdown-item" href="#">Excluir Pedido</a></li>
+                    <li> <button className="dropdown-item" onClick={(e) => ExcluirPedido(props.id_pedido)}>Excluir Pedido</button></li>
                     <li> <hr className="dropdown-divider" /></li>
-                    <li> <a className="dropdown-item" href="#">Finalizar Pedido</a></li>
-                    <li> <a className="dropdown-item" href="#">Reabrir Pedido</a></li>
+                    <li> <button className="dropdown-item" onClick={(e) => AlterarStatus(props.id_pedido, "F")}>Finalizar Pedido</button></li>
+                    <li> <button className="dropdown-item" onClick={(e) => AlterarStatus(props.id_pedido, "A")}>Reabrir Pedido</button></li>
                 </ul>
             </div>
         </td>

@@ -1,30 +1,28 @@
-import { Link, useParams } from "react-router-dom"
+import { Link, useNavigate, useParams } from "react-router-dom"
 import Navbar from "../components/navbar/navbar"
 import "./pedido-editar.css"
 import { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
+import moment from "moment";
 
 function PedidoEditar() {
 
     const {id_pedido} = useParams();
+    const navigate = useNavigate();
 
-    const lista_clientes = [{id_cliente: 1, nome: "Carlos"},
-                            {id_cliente: 2, nome: "Andre"}];
+    const [id_cliente, setIdCliente] = useState(0);
+    const [dt_pedido, setDtPedido] = useState("");
+    const [id_cond_pagto, setIdCondPagto] = useState(0);
+    const [dt_entrega, setDtEntrega] = useState("");
+    const [obs, setObs] = useState("");
+    const [produtos, setProdutos] = useState([]);
+    const [vl_total, setVlTotal] = useState(0);
+    const [msg, setMsg] = useState("");
 
-    const cond_pagtos = [{id_cond_pagto: 1,             cond_pagtos: "30 Dias"},
-                         {id_cond_pagto: 2,             cond_pagtos: "45 Dias"}];
-
-
-    const [produtos, setProdutos] = useState([{id_item: 1, id_produto: 1, descricao: "MONITOR DELL", qtd: 2,  vl_unit: 510, vl_total: 1020},
-                                      {id_item: 2, id_produto: 2, descricao: "HD SEAGATE 2TB", qtd: 1, vl_unit: 300, vl_total: 300}]);
-
+    const [lista_produtos, setListaProdutos] = useState([]); 
+    const [lista_clientes, setListaClientes] = useState([]);
+    const [cond_pagtos, setCondPagtos] = useState([]);     
     
-const lista_produtos = [{id_item: 1, id_produto: 1, descricao: "MONITOR DELL"},
-                        {id_item: 2, id_produto: 2, descricao: "HD SEAGATE 2TB"},
-                        {id_item: 3, id_produto: 3, descricao: "MOUSE LOGITECH"}];
-
-                    
-const total_pedido = 5000;
 
 
 function AdicionarProduto() {
@@ -55,15 +53,105 @@ function ExcluirProduto(id_item) {
 
 function CarregarDadosPedido(id_ped) {
     if (id_ped > 0){
-        //editando
-    } else {
-        //inserindo
+        //editar
+        setIdCliente(1);
+        setDtPedido("2023-10-10");
+        setIdCondPagto(2);
+        setDtEntrega("2023-10-30");
+        setObs("teste");
+        setProdutos([{id_item: 1, id_produto: 1, descricao: "MONITOR DELL", qtd: 2,  vl_unit: 510, vl_total: 1020},
+                     {id_item: 2, id_produto: 2, descricao: "HD SEAGATE 2TB", qtd: 1, vl_unit: 300, vl_total: 300}]);
+        } 
+        //inserir
+    else {
+        setIdCliente(0);
+        setDtPedido(moment().format("YYYY-MM-DD"));
+        setIdCondPagto(0);
+        setDtEntrega(moment().format("YYYY-MM-DD"));
+        setObs("");
+        setProdutos([]);
     }
 }
 
+function PesquisarClientes() {
+    setListaClientes([{id_cliente: 1, nome: "Carlos"},
+                      {id_cliente: 2, nome: "André"}]);
+}
+
+function PesquisarProdutos(){
+    setListaProdutos([{id_item: 1, id_produto: 1, descricao: "MONITOR DELL"},
+                      {id_item: 2, id_produto: 2, descricao: "HD SEAGATE 2TB"},
+                      {id_item: 3, id_produto: 3, descricao: "MOUSE LOGITECH"}]);
+}
+
+function PesquisarCondPagtos() {
+    setCondPagtos([{id_cond_pagto: 1, cond_pagtos: "30 Dias"},
+                   {id_cond_pagto: 2, cond_pagtos: "45 Dias"}]);
+}
+
+function handleDescricaoChange(id_produto, descricao, index){
+    const prod = [...produtos];
+
+    prod[index].id_produto = id_produto;
+    prod[index].descricao = descricao;
+
+    setProdutos(prod);
+}
+
+function handleQtdeChange(qtd, index){
+    const prod = [...produtos];
+
+    prod[index].qtd = qtd;
+    prod[index].vl_total = qtd * prod[index].vl_unit;
+
+    setProdutos(prod);
+}
+
+function handleVlUnitChange(vl, index){
+    const prod = [...produtos];
+
+    prod[index].vl_unit = vl;
+    prod[index].vl_total = prod[index].qtd * vl;
+
+    setProdutos(prod);
+}
+
+
+function CalculaTotal(){
+    let total = 0;
+
+    produtos.map((prod) => {
+        total = total + prod.vl_total;
+    })
+
+    setVlTotal(total);
+}
+
+
+function SalvarDados(){
+    const dados_pedido = {
+        id_cliente: id_cliente,
+        id_cond_pagto,
+        id_usuario: 0,
+        dt_pedido,
+        dt_entrega,
+        vl_total,
+        itens: produtos  
+    };
+
+    navigate("/pedidos");
+}
+
 useEffect(() => {
+    PesquisarClientes();
+    PesquisarProdutos();
+    PesquisarCondPagtos();   
     CarregarDadosPedido(id_pedido);
 }, []);
+
+useEffect(() => {
+    CalculaTotal();
+}, [produtos]);
 
     return <>
         <Navbar />
@@ -84,7 +172,8 @@ useEffect(() => {
                <div className="col-md-8 mb-4">
                     <label htmlFor="InputNome" className="form-label">Cliente</label>
                     <div className="form-control mb-2">
-                        <select name="clientes"         id="clientes">
+                        <select name="clientes" id="clientes" onChange={(e) => setIdCliente(e.target.value)} value={id_cliente}>
+                                <option value="0">Selecione o Cliente</option>
                                 {lista_clientes.map(c => {
                                     return <option key={c.id_cliente} value={c.id_cliente}>{c.nome}</option>
                                 })}
@@ -94,7 +183,7 @@ useEffect(() => {
 
                 <div className="col-md-4 mb-4">
                     <label htmlFor="InputEmail" className="form-label">Data Venda</label>
-                    <input type="text" className="form-control" id="InputEmail" aria-describedby="email"/>             
+                    <input type="date" onChange={(e) => setDtPedido(e.target.value)} value={dt_pedido} className="form-control" id="InputEmail" aria-describedby="email"/>             
 
             
                 </div>
@@ -102,7 +191,8 @@ useEffect(() => {
                 <div className="col-md-8 mb-4">
                     <label htmlFor="InputNome" className="form-label">Cond. de Pagamento</label>
                     <div className="form-control mb-2">
-                        <select name="cond_pagtos" id="cond_pagtos">
+                        <select name="cond_pagtos" id="cond_pagtos" onChange={(e) => setIdCondPagto(e.target.value)} value={id_cond_pagto}>
+                            <option value="0">Selecione a condição de pagamento</option>
                             {cond_pagtos.map(c => {
                                 return <option key={c.id_cond_pagto} value={c.id_cond_pagto}>{c.cond_pagtos}</option>
                             })}
@@ -113,7 +203,7 @@ useEffect(() => {
 
                 <div className="col-md-4 mb-5">
                     <label htmlFor="InputEmail" className="form-label">Previsão de Entrega</label>
-                    <input type="text"  className="form-control" id="InputEmail" aria-describedby="
+                    <input type="date" onChange={(e) => setDtEntrega(e.target.value)} value={dt_entrega}  className="form-control" id="InputEmail" aria-describedby="
                     email" />
                 </div>
 
@@ -134,17 +224,19 @@ useEffect(() => {
                                     return <tr key={produto.id_item}>
                                         <td>
                                             <div className="form-control">
-                                                <select name="produtos" id="produtos">
-                                                    <option value="0">Selecione o Produto</option>
+                                                <select name="produtos" id="produtos" value={produto.id_produto} 
+                                                        onChange={(e) => handleDescricaoChange(e.target.value,
+                                                                                               e.target[e.target.selectedIndex].text, index)}>
+                                                    <option value="0">Selecione o produto</option>
                                                     {lista_produtos.map(p => {
                                                         return <option key={p.id_produto} value={p.id_produto}>{p.descricao}</option>
                                                     })}
                                                 </select>
                                             </div>
                                         </td>
-                                        <td><input type="text" className="form-control" /></td>
-                                        <td><input type="text" className="form-control" /></td>
-                                        <td><input type="text" className="form-control" disabled /></td>
+                                        <td><input type="text" onChange={(e) => handleQtdeChange(e.target.value, index)} value={produtos.qtd} className="form-control" /></td>
+                                        <td><input type="text" onChange={(e) => handleVlUnitChange(e.target.value, index)} value={produtos.vl_unit} className="form-control" /></td>
+                                        <td><input type="text" value={produto.vl_total} className="form-control" disabled /></td>
                                         <td><button type="button" onClick={(e) => ExcluirProduto(produto.id_item)} className="btn btn-danger"><i className="bi bi-trash3-fill"></i></button></td>
                                     </tr>
                                 })
@@ -167,20 +259,23 @@ useEffect(() => {
                 <div className="col-md-6 text-end mb-5">
                     <span className="me-4">Total Pedido:</span>
                     <b>
-                        {new Intl.NumberFormat('pt-BR', {style: 'currency', currency: 'BRL'}).format(total_pedido)}
+                        {new Intl.NumberFormat('pt-BR', {style: 'currency', currency: 'BRL'}).format(vl_total)}
                     </b>
                 </div>
 
                 <div className="col-12">
                     <label htmlFor="InputNome" className="form-label">Obs</label>
-                    <textarea type="text" className="form-control"></textarea>
+                    <textarea type="text" onChange={(e) => setObs(e.target.text)} value={obs} className="form-control"></textarea>
                 </div>
 
                 <div className="col-12 mt-3">
+                    {
+                        msg.length > 0 ? <div className="alert alert-danger mt-4 text-center">{msg}</div> : null
+                    }
                     <div>
                         <div className="d-flex justify-content-end">
                             <Link to="/pedidos" type="button" className="btn btn-outline-primary me-4">Cancelar</Link>
-                            <button type="button" className="btn btn-success">Salvar Dados</button>
+                            <button type="button" className="btn btn-success" onClick={SalvarDados}>Salvar Dados</button>
                         </div>
                     </div>
                 </div>
@@ -193,3 +288,4 @@ useEffect(() => {
 }
 
 export default PedidoEditar;
+
