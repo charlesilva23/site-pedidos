@@ -3,6 +3,8 @@ import Navbar from "../../components/navbar/navbar.jsx";
 import '../pedidos/pedidos.css'
 import Pedido from "../../components/pedido/pedido.jsx";
 import { useEffect, useState } from "react";
+import axios from "axios";
+import api from "../../services/api.js";
 
 
 function Pedidos() {
@@ -13,33 +15,20 @@ function Pedidos() {
     function ConsultarPedidos() {
 
         // Fazendo GET no servidor
-        
-        setPedidos([
-            {
-                "id_pedido": 1,
-                "cliente": "Posto Brasil",
-                "dt_pedido": "2023-03-09T19:45:54.2092",
-                "status": "F",
-                "status_descricao": "Finalizado",
-                "vl_total": 180
-            },
-            {
-                "id_pedido": 2,
-                "cliente": "Charle's Industries",
-                "dt_pedido": "2023-02-15T19:00:00.0002",
-                "status": "F",
-                "status_descricao": "Finalizado",
-                "vl_total": 1400
-            },
-            {
-                "id_pedido": 3,
-                "cliente": "Mercadinho do futuro",
-                "dt_pedido": "2023-02-17T18:00:00.1002",
-                "status": "A",
-                "status_descricao": "Aberto",
-                "vl_total": 1900
+        api.get("/pedidos?status=" + status)
+        .then((retorno) => {
+            setPedidos(retorno.data);
+        })
+        .catch((err) => {
+            setPedidos([]);
+
+            if(err.response) {
+                console.log(err.response.data);
             }
-        ]);
+
+            alert("Erro ao consultar os pedidos");
+        });
+       
     }
 
     useEffect(() => {
@@ -91,7 +80,9 @@ function Pedidos() {
                                                dt_pedido={pedido.dt_pedido}
                                                status={pedido.status}
                                                status_descricao={pedido.status_descricao}
-                                               vl_total={pedido.vl_total} />
+                                               vl_total={pedido.vl_total}
+                                               atualizar_lista={ConsultarPedidos}
+                                               />
                             })
                         }
                     </tbody>

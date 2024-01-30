@@ -4,6 +4,8 @@ import "./pedido-editar.css"
 import { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import moment from "moment";
+import api from "../services/api.js";
+
 
 function PedidoEditar() {
 
@@ -51,19 +53,22 @@ function ExcluirProduto(id_item) {
     setProdutos(prod);
 }
 
-function CarregarDadosPedido(id_ped) {
-    if (id_ped > 0){
-        //editar
-        setIdCliente(1);
-        setDtPedido("2023-10-10");
-        setIdCondPagto(2);
-        setDtEntrega("2023-10-30");
-        setObs("teste");
-        setProdutos([{id_item: 1, id_produto: 1, descricao: "MONITOR DELL", qtd: 2,  vl_unit: 510, vl_total: 1020},
-                     {id_item: 2, id_produto: 2, descricao: "HD SEAGATE 2TB", qtd: 1, vl_unit: 300, vl_total: 300}]);
-        } 
-        //inserir
-    else {
+function CarregarDadosPedido(id_pedido) {
+    console.log(id_pedido)
+    if (id_pedido > 0){
+        api.get("/pedidos/" + id_pedido)
+        .then(retorno => {
+            setIdCliente(retorno.data.id_cliente);
+            setDtPedido(retorno.data.dt_pedido.substring(0, 10));
+            setIdCondPagto(retorno.data.id_cond_pagto);
+            setDtEntrega(retorno.data.dt_entrega.substring(0, 10));
+            setObs(retorno.data.obs);
+            setProdutos(retorno.data.itens);
+        })
+        .catch(err => {
+            console.log(err);
+        });
+        } else {
         setIdCliente(0);
         setDtPedido(moment().format("YYYY-MM-DD"));
         setIdCondPagto(0);
@@ -74,19 +79,36 @@ function CarregarDadosPedido(id_ped) {
 }
 
 function PesquisarClientes() {
-    setListaClientes([{id_cliente: 1, nome: "Carlos"},
-                      {id_cliente: 2, nome: "André"}]);
+    api.get("/clientes")
+    .then((retorno) => {
+        setListaClientes(retorno.data);
+    })
+    .catch((err) => {
+        console.log(err);
+        alert("Erro ao consultar os pedidos");
+    });
 }
 
 function PesquisarProdutos(){
-    setListaProdutos([{id_item: 1, id_produto: 1, descricao: "MONITOR DELL"},
-                      {id_item: 2, id_produto: 2, descricao: "HD SEAGATE 2TB"},
-                      {id_item: 3, id_produto: 3, descricao: "MOUSE LOGITECH"}]);
+    api.get("/produtos")
+    .then((retorno) => {
+        setListaProdutos(retorno.data);
+    })
+    .catch((err) => {
+        console.log(err);
+        alert("Erro ao consultar os produtos");
+    });
 }
 
-function PesquisarCondPagtos() {
-    setCondPagtos([{id_cond_pagto: 1, cond_pagtos: "30 Dias"},
-                   {id_cond_pagto: 2, cond_pagtos: "45 Dias"}]);
+function PesquisarCondPagtos(){
+    api.get("/condpagto")
+        .then((retorno) => {
+            setCondPagtos(retorno.data);
+        })
+        .catch((err) => {
+            console.log(err);
+            alert("Erro ao consultar as condições de pagamentos");
+        });
 }
 
 function handleDescricaoChange(id_produto, descricao, index){
@@ -116,30 +138,58 @@ function handleVlUnitChange(vl, index){
     setProdutos(prod);
 }
 
-
-function CalculaTotal(){
-    let total = 0;
-
-    produtos.map((prod) => {
-        total = total + prod.vl_total;
-    })
-
-    setVlTotal(total);
-}
-
-
 function SalvarDados(){
     const dados_pedido = {
         id_cliente: id_cliente,
         id_cond_pagto,
-        id_usuario: 0,
+        id_usuario: localStorage.getItem("sessionId"),
         dt_pedido,
         dt_entrega,
         vl_total,
+        obs,
         itens: produtos  
     };
+    console.log(dados_pedido)
+    if(id_pedido > 0) {
+        api.put("/pedidos/" + id_pedido, dados_pedido)
+        .then((retorno) => {
+            if(retorno.status == 200){
+                navigate("/pedidos");
+            } else {
+                setMsg("Erro ao editar o pedido");
+                console.log(retorno);
+            }
+        })
+        .catch((err) => {
+            if(err.response) {
+                if(err.response.data){
+                    setMsg(err.response.data);
+                } else {
+                    setMsg("Erro ao salvar o pedido");
+                }
+            }
+        });
+    } else {
+        api.post("/pedidos/", dados_pedido)
+        .then((retorno) => {
+            if(retorno.status == 201){
+                navigate("/pedidos");
+            } else {
+                setMsg("Erro ao cadastrar o pedido");
+                console.log(retorno);
+            }
+        })
+        .catch((err) => {
+            if(err.response){
+                if(err.response.data){
+                    setMsg(err.response.data);
+                } 
+            } else {
+                setMsg("Erro ao salvar o pedido");
+            }
+        });
+    }
 
-    navigate("/pedidos");
 }
 
 useEffect(() => {
@@ -147,9 +197,18 @@ useEffect(() => {
     PesquisarProdutos();
     PesquisarCondPagtos();   
     CarregarDadosPedido(id_pedido);
-}, []);
+}, [id_pedido]);
 
 useEffect(() => {
+    function CalculaTotal(){
+        let total = 0;
+    
+        produtos.map((prod) => {
+            total = total + prod.vl_total;
+        })
+    
+        setVlTotal(total);
+    }
     CalculaTotal();
 }, [produtos]);
 
@@ -191,10 +250,10 @@ useEffect(() => {
                 <div className="col-md-8 mb-4">
                     <label htmlFor="InputNome" className="form-label">Cond. de Pagamento</label>
                     <div className="form-control mb-2">
-                        <select name="cond_pagtos" id="cond_pagtos" onChange={(e) => setIdCondPagto(e.target.value)} value={id_cond_pagto}>
+                        <select name="cond_pagto" id="cond_pagto" onChange={(e) => setIdCondPagto(e.target.value)} value={id_cond_pagto}>
                             <option value="0">Selecione a condição de pagamento</option>
                             {cond_pagtos.map(c => {
-                                return <option key={c.id_cond_pagto} value={c.id_cond_pagto}>{c.cond_pagtos}</option>
+                                return <option key={c.id_cond_pagto} value={c.id_cond_pagto}>{c.cond_pagto}</option>
                             })}
 
                         </select>
@@ -234,8 +293,8 @@ useEffect(() => {
                                                 </select>
                                             </div>
                                         </td>
-                                        <td><input type="text" onChange={(e) => handleQtdeChange(e.target.value, index)} value={produtos.qtd} className="form-control" /></td>
-                                        <td><input type="text" onChange={(e) => handleVlUnitChange(e.target.value, index)} value={produtos.vl_unit} className="form-control" /></td>
+                                        <td><input type="text" onChange={(e) => handleQtdeChange(e.target.value, index)} value={produto.qtd} className="form-control" /></td>
+                                        <td><input type="text" onChange={(e) => handleVlUnitChange(e.target.value, index)} value={produto.vl_unit} className="form-control" /></td>
                                         <td><input type="text" value={produto.vl_total} className="form-control" disabled /></td>
                                         <td><button type="button" onClick={(e) => ExcluirProduto(produto.id_item)} className="btn btn-danger"><i className="bi bi-trash3-fill"></i></button></td>
                                     </tr>
@@ -265,7 +324,7 @@ useEffect(() => {
 
                 <div className="col-12">
                     <label htmlFor="InputNome" className="form-label">Obs</label>
-                    <textarea type="text" onChange={(e) => setObs(e.target.text)} value={obs} className="form-control"></textarea>
+                    <textarea type="text" onChange={(e) => setObs(e.target.value)} value={obs} className="form-control"></textarea>
                 </div>
 
                 <div className="col-12 mt-3">

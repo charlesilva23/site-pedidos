@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-
+import axios from "axios";
+import api from "../../services/api.js";
 
 
 function Pedido(props) {
@@ -7,21 +8,29 @@ function Pedido(props) {
     const dt_pedido = new Date(props.dt_pedido.substring(0, 19));
 
     function AlterarStatus(id_ped, st){
-        alert(id_ped + ' Mudar para o status ' + st)
-    
-        //Fazer um PUT para o servidor
+        api.put("/pedidos/" + id_ped + "/status", {
+            status: st
+        })
+        .then((retorno) => {
+            props.atualizar_lista();
+        })
+        .catch((err) => {
+            console.log(err);
+        });
 
     }
 
     function ExcluirPedido(id_ped){
-        alert(' Excluindo pedido ' + id_ped);
-    
-        //Fazer um DELETE para o servidor
+
+        api.delete("/pedidos/" + id_ped)
+        .then((retorno) => {
+            props.atualizar_lista();
+        })
+        .catch((err) => {
+            console.log(err);
+        });
 
     }
-
-
-    
 
     return <tr>
         <td>{props.id_pedido}</td>

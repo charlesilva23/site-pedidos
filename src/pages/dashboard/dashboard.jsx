@@ -1,6 +1,8 @@
 import Navbar from "../../components/navbar/navbar.jsx";
 import Grafico from "../../components/grafico/grafico.jsx";
 import { useEffect, useState } from "react";
+import axios from "axios";
+import api from "../../services/api.js";
 
 function Dashboard() {
 
@@ -12,54 +14,46 @@ function Dashboard() {
  
 
     function GraficoClientes() {
-        setDadosClientes([
-            ["Cliente", "Vendas"],
-            ["Microsoft", 5200],
-            ["IBM", 4900],
-            ["Apple", 4200],
-            ["Facebook", 3210],
-            ["Google", 2140],
-        ]);
+
+        api.get("/dashboard/clientes")
+        .then((retorno) => {
+            setDadosClientes(retorno.data);
+        })
+        .catch((err) => {
+            console.log(err);
+        });
+
+        
     }
 
     function GraficoVendas() {
-        setDadosVendas([
-            ["Mês", "Vendas"],
-            ["1", 5200],
-            ["2", 4900],
-            ["3", 7200],
-            ["4", 3210],
-            ["5", 5362],
-            ["6", 6200],
-            ["7", 4210],
-            ["8", 5630],
-            ["9", 8452],
-            ["10", 6852],
-            ["11", 4250],
-            ["12", 6325]
-        ]);
+        api.get("/dashboard/vendas")
+        .then((retorno) => {
+            setDadosVendas(retorno.data);
+        })
+        .catch((err) => {
+            console.log(err);
+        });
     }
 
     function GraficoProdutos() {
-        setDadosProdutos([
-            ["Produtos", "Vendas"],
-            ["Teclado", 5200],
-            ["HD", 4900],
-            ["Monitor", 7000],
-            ["Fone", 3210],
-            ["Webcam", 5362]
-        ]);
+        api.get("/dashboard/produtos")
+        .then((retorno) => {
+            setDadosProdutos(retorno.data);
+        })
+        .catch((err) => {
+            console.log(err);
+        });
     }
 
     function GraficoCidades() {
-        setDadosCidades([
-            ["Cidade", "Vendas"],
-            ["São Paulo", 5200],
-            ["Rio de Janeiro", 4900],
-            ["Maringá", 7000],
-            ["Campinas", 3210],
-            ["Curitiba", 5362]
-        ]);
+        api.get("/dashboard/cidades")
+        .then((retorno) => {
+            setDadosCidades(retorno.data);
+        })
+        .catch((err) => {
+            console.log(err);
+        });
     }
 
     function MontarGraficos() {
@@ -69,9 +63,20 @@ function Dashboard() {
         GraficoCidades();
     }    
 
+    //isso ficaria na tela de login
+    function SalvarDadosUsuario(id, nome, email, token){
+        localStorage.setItem("sessionId", id);
+        localStorage.setItem("sessionNome", nome);
+        localStorage.setItem("sessionEmail", email);
+        localStorage.setItem("sessionToken", token);
+    }
+
     useEffect(() => {
         MontarGraficos();
+        
+        SalvarDadosUsuario("1", "Charles", "charles@charles.com", "00000000");
     }, []);
+
 
 
     return <>
